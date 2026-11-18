@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Resource Manager Control Center</title>
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body class="dark-theme">
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Server Offline / Reconnecting Banner -->
+  <div id="server-offline-banner" class="offline-banner hidden">
+    <div class="banner-content">
+      <span class="pulse-indicator red"></span>
+      <strong>Server Disconnected:</strong> Cannot reach dashboard backend. Retrying connection...
+    </div>
+  </div>
+
+  <!-- Presentation Mode Exit Floating Button -->
+  <button id="exit-pres-btn" class="exit-pres-btn hidden" title="Exit Presentation Mode (Press F or Esc)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+    Exit Presentation (Esc)
+  </button>
+
+  <div class="dashboard-shell">
+    <!-- Header Bar -->
+    <header class="header-bar glass-panel">
+      <div class="header-left">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+              <path d="M7 8l3 3-3 3"></path>
+              <line x1="13" y1="14" x2="17" y2="14"></line>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1>Smart Resource Manager</h1>
+            <span class="subtitle">Operating Systems Autonomous Process Control Center</span>
+          </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="header-badges">
+          <span id="mode-badge" class="badge mode-badge live" title="Operating Mode">
+            <span class="dot"></span>
+            <span class="badge-label">LIVE</span>
+          </span>
+          <span id="conn-badge" class="badge conn-badge connected" title="Manager Connection Status">
+            <span class="dot"></span>
+            <span class="badge-label">Connected</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Strip -->
+      <div class="header-metrics">
+        <div class="quick-metric" title="C++ Manager Uptime">
+          <span class="metric-label">UPTIME</span>
+          <span id="uptime-val" class="metric-val mono">--:--:--</span>
+        </div>
+        <div class="quick-metric" title="Total Running System Processes">
+          <span class="metric-label">PROCESSES</span>
+          <span id="procs-count-val" class="metric-val mono">--</span>
+        </div>
+        <div class="quick-metric" title="System Load Averages (1m, 5m, 15m)">
+          <span class="metric-label">LOAD AVG</span>
+          <span id="load-val" class="metric-val mono">0.00, 0.00, 0.00</span>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <button id="btn-demo-panel" class="icon-btn" title="Toggle Demo Controls" aria-label="Demo Controls">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span class="btn-text">Demo</span>
+        </button>
+        <button id="btn-open-log" class="icon-btn" title="View manager.log" aria-label="Open Log Viewer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          <span class="btn-text">Log</span>
+        </button>
+        <button id="btn-open-settings" class="icon-btn" title="Configure Rules & Settings" aria-label="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span class="btn-text">Rules</span>
+        </button>
+        <button id="btn-toggle-presentation" class="icon-btn" title="Presentation Mode (Key: F)" aria-label="Presentation Mode">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+        </button>
+        <button id="btn-toggle-theme" class="icon-btn" title="Toggle Dark/Light Theme" aria-label="Toggle Theme">
+          <svg id="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <svg id="theme-icon-sun" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Empty State / Waiting Screen (Overlay when state.json is missing or manager is stopped) -->
+    <div id="empty-state-screen" class="empty-state-card glass-panel hidden">
+      <div class="empty-state-icon">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h2>Waiting for smart_rm...</h2>
+      <p class="empty-desc">The C++ resource manager daemon is not generating state updates yet.</p>
+      <div class="command-box">
+        <code>./smart_rm</code>
+        <span class="cmd-tip">Run in your project directory (or run the dashboard with <code>MOCK=1</code> for simulated mode)</span>
+      </div>
+    </div>
+
+    <!-- Main Dashboard Content Grid -->
+    <main id="main-content" class="dashboard-grid">
+
+      <!-- Row 1: Hero KPIs + Action Totals -->
+      <section class="kpi-section">
+        <!-- CPU Hero Gauge Card -->
+        <div class="card glass-panel gauge-card">
+          <div class="card-header">
+            <span class="card-title">System CPU</span>
+            <span id="cores-badge" class="chip pill-subtle">4 Cores</span>
+          </div>
+          <div class="gauge-content">
+            <div class="radial-gauge-wrapper">
+              <svg class="radial-gauge" viewBox="0 0 160 160">
+                <circle class="gauge-bg" cx="80" cy="80" r="68"></circle>
+                <circle id="cpu-gauge-circle" class="gauge-val" cx="80" cy="80" r="68" stroke-dasharray="427.26" stroke-dashoffset="427.26"></circle>
+              </svg>
+              <div class="gauge-center">
+                <span id="cpu-pct-val" class="gauge-number mono">0.0</span>
+                <span class="gauge-unit">%</span>
+                <span class="gauge-sub">NORMALIZED</span>
+              </div>
+            </div>
+            <div class="sparkline-wrapper">
+              <div class="sparkline-meta">
+                <span>Last 120s Trend</span>
+                <span id="cpu-peak-val" class="mono text-muted">Peak: 0%</span>
+              </div>
+              <canvas id="cpu-sparkline" width="240" height="42"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Memory Hero Gauge Card -->
+        <div class="card glass-panel gauge-card">
+          <div class="card-header">
+            <span class="card-title">System Memory</span>
+            <span id="mem-summary-badge" class="chip pill-subtle">RAM</span>
+          </div>
+          <div class="gauge-content">
+            <div class="radial-gauge-wrapper">
+              <svg class="radial-gauge" viewBox="0 0 160 160">
+                <circle class="gauge-bg" cx="80" cy="80" r="68"></circle>
+                <circle id="mem-gauge-circle" class="gauge-val" cx="80" cy="80" r="68" stroke-dasharray="427.26" stroke-dashoffset="427.26"></circle>
+              </svg>
+              <div class="gauge-center">
+                <span id="mem-pct-val" class="gauge-number mono">0.0</span>
+                <span class="gauge-unit">%</span>
+                <span class="gauge-sub">UTILIZATION</span>
+              </div>
+            </div>
+            <div class="sparkline-wrapper">
+              <div class="sparkline-meta">
+                <span id="mem-free-text" class="mono">-- MB Free</span>
+                <span id="mem-total-text" class="mono text-muted">-- MB Total</span>
+              </div>
+              <canvas id="mem-sparkline" width="240" height="42"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Counters (Totals) -->
+        <div class="card glass-panel totals-card">
+          <div class="card-header">
+            <span class="card-title">Autonomous Action Totals</span>
+            <span class="chip pill-subtle">Cumulative</span>
+          </div>
+          <div class="totals-grid">
+            <div class="total-stat-item warn">
+              <div class="total-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              </div>
+              <div class="total-meta">
+                <span class="total-label">WARNED</span>
+                <span id="counter-warn" class="total-value mono counter-anim">0</span>
+              </div>
+            </div>
+
+            <div class="total-stat-item renice">
+              <div class="total-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
+              </div>
+              <div class="total-meta">
+                <span class="total-label">RENICED</span>
+                <span id="counter-renice" class="total-value mono counter-anim">0</span>
+              </div>
+            </div>
+
+            <div class="total-stat-item pause">
+              <div class="total-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+              </div>
+              <div class="total-meta">
+                <span class="total-label">PAUSED (SIGSTOP)</span>
+                <span id="counter-pause" class="total-value mono counter-anim">0</span>
+              </div>
+            </div>
+
+            <div class="total-stat-item kill">
+              <div class="total-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+              </div>
+              <div class="total-meta">
+                <span class="total-label">KILLED (SIGTERM/9)</span>
+                <span id="counter-kill" class="total-value mono counter-anim">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Row 2: Live Cause-and-Effect Area Chart -->
+      <section class="card glass-panel chart-section">
+        <div class="card-header">
+          <div class="chart-header-left">
+            <span class="card-title">Real-Time System Timeline & Escalation Marker Stream</span>
+            <span class="card-desc">Continuous 3-minute history with annotated autonomous signals</span>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-color cpu-color"></span> CPU %</span>
+            <span class="legend-item"><span class="legend-color mem-color"></span> Memory %</span>
+            <span class="legend-item"><span class="legend-dot marker-renice"></span> Renice</span>
+            <span class="legend-item"><span class="legend-dot marker-pause"></span> Pause</span>
+            <span class="legend-item"><span class="legend-dot marker-kill"></span> Kill</span>
+          </div>
+        </div>
+        <div class="chart-canvas-container" id="chart-container">
+          <canvas id="timeline-chart" height="180"></canvas>
+          <div id="chart-tooltip" class="chart-tooltip hidden"></div>
+        </div>
+      </section>
+
+      <!-- Row 3: How It Works Escalation Ladder -->
+      <section class="card glass-panel ladder-section">
+        <div class="card-header">
+          <span class="card-title">Autonomous Escalation Pipeline ("How It Works")</span>
+          <span class="chip pill-subtle">Hover steps for OS internals</span>
+        </div>
+        <div class="ladder-container">
+          <!-- Step 1: WARN -->
+          <div class="ladder-step" data-step="warn">
+            <div class="step-badge warn-step">1</div>
+            <div class="step-info">
+              <div class="step-title">WARN</div>
+              <div class="step-condition" id="ladder-warn-cond">Mem > <span class="rule-val" id="ladder-mem-limit">500</span> MB</div>
+            </div>
+            <div class="step-arrow">➔</div>
+            <div class="os-tooltip">
+              <strong>Linux /proc Inspection</strong><br>
+              Monitors <code>/proc/[pid]/statm</code> RSS memory. Flags misbehaving processes early before exhaustion.
+            </div>
+          </div>
+
+          <!-- Step 2: RENICE -->
+          <div class="ladder-step" data-step="renice">
+            <div class="step-badge renice-step">2</div>
+            <div class="step-info">
+              <div class="step-title">RENICE</div>
+              <div class="step-condition" id="ladder-renice-cond">CPU > <span class="rule-val" id="ladder-cpu-limit">70</span>% for <span class="rule-val" id="ladder-t-renice">5</span>s</div>
+            </div>
+            <div class="step-arrow">➔</div>
+            <div class="os-tooltip">
+              <strong>CFS Scheduler & Nice Values</strong><br>
+              Lowers priority via <code>setpriority(PRIO_PROCESS, pid, <span id="ladder-nice-val">10</span>)</code> so the Completely Fair Scheduler reduces its CPU time slice.
+            </div>
+          </div>
+
+          <!-- Step 3: PAUSE -->
+          <div class="ladder-step" data-step="pause">
+            <div class="step-badge pause-step">3</div>
+            <div class="step-info">
+              <div class="step-title">PAUSE</div>
+              <div class="step-condition" id="ladder-pause-cond">Leak sustained for <span class="rule-val" id="ladder-leak-secs">10</span>s</div>
+            </div>
+            <div class="step-arrow">➔</div>
+            <div class="os-tooltip">
+              <strong>SIGSTOP Kernel Freezing</strong><br>
+              Sends <code>SIGSTOP</code> to immediately suspend execution (State T) without data loss, allowing post-mortem inspection. Cannot be caught or ignored.
+            </div>
+          </div>
+
+          <!-- Step 4: KILL -->
+          <div class="ladder-step" data-step="kill">
+            <div class="step-badge kill-step">4</div>
+            <div class="step-info">
+              <div class="step-title">KILL (SIGTERM)</div>
+              <div class="step-condition" id="ladder-kill-cond">CPU sustained > <span class="rule-val" id="ladder-t-kill">10</span>s</div>
+            </div>
+            <div class="step-arrow">➔</div>
+            <div class="os-tooltip">
+              <strong>Graceful Termination (Signal 15)</strong><br>
+              Sends <code>SIGTERM</code> to allow process signal handlers to release file descriptors, flush buffers, and terminate cleanly.
+            </div>
+          </div>
+
+          <!-- Step 5: KILL-9 -->
+          <div class="ladder-step" data-step="kill9">
+            <div class="step-badge kill9-step">5</div>
+            <div class="step-info">
+              <div class="step-title">KILL-9 (SIGKILL)</div>
+              <div class="step-condition" id="ladder-grace-cond">Ignored after <span class="rule-val" id="ladder-grace-cycles">3</span> cycles</div>
+            </div>
+            <div class="os-tooltip">
+              <strong>Unconditional Kernel Kill (Signal 9)</strong><br>
+              If a stubborn process masks or blocks SIGTERM, <code>SIGKILL</code> bypasses userspace and forces the kernel to reclaim all pages and terminate the process.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Row 4: Process Table & Live Action Feed (2 Column layout) -->
+      <section class="split-section">
+        <!-- Process Table Card -->
+        <div class="card glass-panel procs-card">
+          <div class="card-header">
+            <div class="table-header-left">
+              <span class="card-title">Monitored Top Processes</span>
+              <span class="card-desc" id="table-subtitle">Sorted by CPU %</span>
+            </div>
+            <div class="table-header-right">
+              <div class="search-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="proc-filter-input" placeholder="Filter PID, name, status..." aria-label="Filter processes">
+              </div>
+            </div>
+          </div>
+
+          <div class="table-scroll-container">
+            <table class="proc-table" id="proc-table">
+              <thead>
+                <tr>
+                  <th data-sort="pid" class="sortable">PID <span class="sort-indicator"></span></th>
+                  <th data-sort="name" class="sortable">Name <span class="sort-indicator"></span></th>
+                  <th data-sort="state" class="sortable" title="Process state in /proc">State <span class="sort-indicator"></span></th>
+                  <th data-sort="nice" class="sortable" title="Scheduling nice priority">Nice <span class="sort-indicator"></span></th>
+                  <th data-sort="cpu_pct" class="sortable sorted-desc">CPU % <span class="sort-indicator">▼</span></th>
+                  <th data-sort="mem_mb" class="sortable">Mem MB <span class="sort-indicator"></span></th>
+                  <th data-sort="status" class="sortable">Status <span class="sort-indicator"></span></th>
+                </tr>
+              </thead>
+              <tbody id="proc-table-body">
+                <!-- Skeleton rows populated initially -->
+                <tr class="skeleton-row"><td colspan="7"><div class="skeleton-shimmer"></div></td></tr>
+                <tr class="skeleton-row"><td colspan="7"><div class="skeleton-shimmer"></div></td></tr>
+                <tr class="skeleton-row"><td colspan="7"><div class="skeleton-shimmer"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Live Action Feed Card -->
+        <div class="card glass-panel feed-card">
+          <div class="card-header">
+            <div class="feed-header-left">
+              <span class="card-title">Live Action Feed</span>
+              <span class="card-desc">Autonomous events stream</span>
+            </div>
+            <span class="chip pill-subtle mono" id="feed-count-badge">0 events</span>
+          </div>
+
+          <div class="feed-container" id="feed-container" aria-live="polite" aria-relevant="additions text">
+            <!-- Feed items injected dynamically -->
+            <div class="feed-empty-notice">Awaiting events from smart_rm...</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Slide-in Drawer: Demo Controls -->
+    <div id="demo-drawer" class="drawer-overlay hidden">
+      <div class="drawer-panel glass-drawer">
+        <div class="drawer-header">
+          <h3>Simulation & Stress Demo Controls</h3>
+          <button id="btn-close-demo" class="drawer-close-btn" aria-label="Close Demo Controls">&times;</button>
+        </div>
+        <div class="drawer-body">
+          <p class="drawer-intro">
+            Simulate realistic misbehaving OS workloads to test autonomous escalation, logging, and recovery without manual shell scripting.
+          </p>
+
+          <div class="demo-buttons-list">
+            <div class="demo-action-card">
+              <div class="demo-card-meta">
+                <strong>CPU Hog (<code>yes</code>)</strong>
+                <p>Spawns infinite loop consuming 100% of a core. Triggers WARN ➔ RENICE (+10) ➔ SIGTERM KILL.</p>
+              </div>
+              <button id="btn-demo-cpu" class="btn btn-warning">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                Start CPU Hog
+              </button>
+            </div>
+
+            <div class="demo-action-card">
+              <div class="demo-card-meta">
+                <strong>Memory Leak (<code>./leak</code>)</strong>
+                <p>Continuously allocates memory blocks without freeing. Triggers WARN ➔ SIGSTOP PAUSE.</p>
+              </div>
+              <button id="btn-demo-leak" class="btn btn-orange">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                Start Memory Leak
+              </button>
+            </div>
+
+            <div class="demo-action-card">
+              <div class="demo-card-meta">
+                <strong>Stubborn Process (<code>./stubborn</code>)</strong>
+                <p>Traps and masks <code>SIGTERM</code>. Triggers escalation to uncatchable <code>SIGKILL (KILL-9)</code>.</p>
+              </div>
+              <button id="btn-demo-stubborn" class="btn btn-danger">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                Start Stubborn Process
+              </button>
+            </div>
+
+            <div class="demo-action-card stop-all">
+              <div class="demo-card-meta">
+                <strong>Stop All Demo Workloads</strong>
+                <p>Sends immediate SIGKILL to all tracked demo child processes.</p>
+              </div>
+              <button id="btn-demo-stop" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+                Stop All Demo
+              </button>
+            </div>
+          </div>
+
+          <div class="active-demos-section">
+            <span class="section-label">Active Demo Processes</span>
+            <div id="active-demos-list" class="active-demos-list">
+              <span class="text-muted">No test processes currently running</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide-in Drawer: Settings & Rules -->
+    <div id="settings-drawer" class="drawer-overlay hidden">
+      <div class="drawer-panel glass-drawer">
+        <div class="drawer-header">
+          <h3>Manager Configuration (<code>manager.conf</code>)</h3>
+          <button id="btn-close-settings" class="drawer-close-btn" aria-label="Close Settings">&times;</button>
+        </div>
+        <div class="drawer-body">
+          <form id="settings-form">
+            <!-- Dry Run Switch -->
+            <div class="form-group switch-group">
+              <div class="switch-meta">
+                <label for="cfg-dry-run">Dry-Run Mode</label>
+                <span class="help-text">Logs actions without issuing signals to processes</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="cfg-dry-run">
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <!-- CPU Limit Slider -->
+            <div class="form-group">
+              <div class="input-label-row">
+                <label for="cfg-cpu-limit">CPU Limit (%)</label>
+                <span id="cfg-cpu-limit-val" class="mono form-val">70%</span>
+              </div>
+              <input type="range" id="cfg-cpu-limit" min="10" max="100" step="1">
+              <span class="range-bounds">10% — 100%</span>
+            </div>
+
+            <!-- Mem Limit Slider -->
+            <div class="form-group">
+              <div class="input-label-row">
+                <label for="cfg-mem-limit">Memory Limit (MB)</label>
+                <span id="cfg-mem-limit-val" class="mono form-val">500 MB</span>
+              </div>
+              <input type="range" id="cfg-mem-limit" min="50" max="10000" step="50">
+              <span class="range-bounds">50 MB — 10,000 MB</span>
+            </div>
+
+            <!-- t_renice Slider -->
+            <div class="form-group">
+              <div class="input-label-row">
+                <label for="cfg-t-renice">Time to Renice (seconds)</label>
+                <span id="cfg-t-renice-val" class="mono form-val">5s</span>
+              </div>
+              <input type="range" id="cfg-t-renice" min="1" max="60" step="1">
+              <span class="range-bounds">1s — 60s</span>
+            </div>
+
+            <!-- t_kill Slider -->
+            <div class="form-group">
+              <div class="input-label-row">
+                <label for="cfg-t-kill">Time to Kill (seconds)</label>
+                <span id="cfg-t-kill-val" class="mono form-val">10s</span>
+              </div>
+              <input type="range" id="cfg-t-kill" min="1" max="120" step="1">
+              <span class="range-bounds">Must be &ge; Time to Renice</span>
+            </div>
+
+            <!-- leak_secs Slider -->
+            <div class="form-group">
+              <div class="input-label-row">
+                <label for="cfg-leak-secs">Memory Leak Detection Window (seconds)</label>
+                <span id="cfg-leak-secs-val" class="mono form-val">10s</span>
+              </div>
+              <input type="range" id="cfg-leak-secs" min="2" max="120" step="1">
+              <span class="range-bounds">2s — 120s</span>
+            </div>
+
+            <!-- nice_value Slider -->
+            <div class="form-group">
+              <div class="input-label-row">
+                <label for="cfg-nice-value">Target Nice Value</label>
+                <span id="cfg-nice-value-val" class="mono form-val">10</span>
+              </div>
+              <input type="range" id="cfg-nice-value" min="1" max="19" step="1">
+              <span class="range-bounds">1 (gentle) — 19 (minimum CPU priority)</span>
+            </div>
+
+            <!-- grace_cycles Slider -->
+            <div class="form-group">
+              <div class="input-label-row">
+                <label for="cfg-grace-cycles">Grace Cycles Before SIGKILL</label>
+                <span id="cfg-grace-cycles-val" class="mono form-val">3</span>
+              </div>
+              <input type="range" id="cfg-grace-cycles" min="1" max="30" step="1">
+              <span class="range-bounds">1 — 30 cycles</span>
+            </div>
+
+            <!-- table_rows Slider -->
+            <div class="form-group">
+              <div class="input-label-row">
+                <label for="cfg-table-rows">Max Process Table Rows</label>
+                <span id="cfg-table-rows-val" class="mono form-val">10</span>
+              </div>
+              <input type="range" id="cfg-table-rows" min="3" max="50" step="1">
+              <span class="range-bounds">3 — 50 rows</span>
+            </div>
+
+            <!-- Protected Processes Chip List -->
+            <div class="form-group">
+              <label>Protected Processes (Immune to Escalation)</label>
+              <div class="chips-container" id="protected-chips">
+                <!-- Chips injected dynamically -->
+              </div>
+              <div class="add-chip-row">
+                <input type="text" id="add-protected-input" placeholder="Process name (e.g. nginx)...">
+                <button type="button" id="btn-add-protected" class="btn btn-secondary btn-sm">Add</button>
+              </div>
+            </div>
+
+            <div class="drawer-actions">
+              <button type="submit" id="btn-save-config" class="btn btn-primary">
+                Save & Reload (SIGUSR1)
+              </button>
+              <span id="save-status-msg" class="save-status-text"></span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Manager Log Viewer -->
+    <div id="log-modal" class="modal-overlay hidden">
+      <div class="modal-panel glass-panel">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <h3>Manager Event Log (<code>manager.log</code>)</h3>
+            <span class="chip pill-subtle">Real-Time Daemon Audit Trail</span>
+          </div>
+          <button id="btn-close-log" class="drawer-close-btn" aria-label="Close Log">&times;</button>
+        </div>
+
+        <div class="log-controls-bar">
+          <div class="log-filters" id="log-level-filters">
+            <button class="filter-pill active" data-level="ALL">ALL</button>
+            <button class="filter-pill" data-level="WARN">WARN</button>
+            <button class="filter-pill" data-level="RENICE">RENICE</button>
+            <button class="filter-pill" data-level="PAUSE">PAUSE</button>
+            <button class="filter-pill" data-level="KILL">KILL</button>
+            <button class="filter-pill" data-level="CONFIG">CONFIG</button>
+            <button class="filter-pill" data-level="INFO">INFO</button>
+          </div>
+
+          <div class="log-actions-right">
+            <input type="text" id="log-search-input" placeholder="Search logs..." class="log-search">
+            <label class="auto-scroll-label">
+              <input type="checkbox" id="log-autoscroll-chk" checked>
+              <span>Auto-scroll</span>
+            </label>
+            <button id="btn-download-log" class="btn btn-secondary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download
+            </button>
+          </div>
+        </div>
+
+        <div class="log-viewer-body" id="log-viewer-body">
+          <div class="log-empty-msg">Loading manager.log entries...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="static/app.js"></script>
+</body>
+</html>

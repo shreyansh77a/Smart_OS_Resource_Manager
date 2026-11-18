@@ -1,0 +1,32 @@
+{
+  "running": false,
+  "timestamp": "2026-11-18T08:05:18",
+  "epoch": 1794989118,
+  "pid": 20627,
+  "uptime_sec": 80,
+  "mode": "LIVE",
+  "cores": 8,
+  "config_file": "manager.conf",
+  "system": {"cpu_pct": 0.6, "mem_pct": 33.8, "mem_total_mb": 5769, "mem_free_mb": 3820, "load": [0.45, 0.27, 0.16], "process_count": 47},
+  "rules": {"cpu_limit": 70.0, "mem_limit_mb": 500.0, "t_renice": 5, "t_kill": 10, "leak_secs": 10, "nice_value": 10, "grace_cycles": 3},
+  "totals": {"warn": 0, "renice": 0, "pause": 0, "kill": 0},
+  "processes": [
+    {"pid": 20008, "name": "MainThread", "state": "S", "nice": 0, "cpu_pct": 2.0, "mem_mb": 52.3, "status": "protected"},
+    {"pid": 601, "name": "MainThread", "state": "S", "nice": 0, "cpu_pct": 1.0, "mem_mb": 784.8, "status": "protected"},
+    {"pid": 523, "name": "MainThread", "state": "S", "nice": 0, "cpu_pct": 1.0, "mem_mb": 133.9, "status": "protected"},
+    {"pid": 552, "name": "MainThread", "state": "S", "nice": 0, "cpu_pct": 1.0, "mem_mb": 81.5, "status": "protected"},
+    {"pid": 94, "name": "systemd-udevd", "state": "S", "nice": 0, "cpu_pct": 1.0, "mem_mb": 6.5, "status": "ok"},
+    {"pid": 6896, "name": "MainThread", "state": "S", "nice": 0, "cpu_pct": 0.0, "mem_mb": 465.4, "status": "protected"},
+    {"pid": 594, "name": "MainThread", "state": "S", "nice": 0, "cpu_pct": 0.0, "mem_mb": 172.2, "status": "protected"},
+    {"pid": 662, "name": "copilot-runtime", "state": "S", "nice": 0, "cpu_pct": 0.0, "mem_mb": 74.7, "status": "ok"},
+    {"pid": 582, "name": "MainThread", "state": "S", "nice": 0, "cpu_pct": 0.0, "mem_mb": 73.2, "status": "protected"},
+    {"pid": 19990, "name": "MainThread", "state": "S", "nice": 0, "cpu_pct": 0.0, "mem_mb": 51.5, "status": "protected"},
+    {"pid": 210, "name": "unattended-upgr", "state": "S", "nice": 0, "cpu_pct": 0.0, "mem_mb": 22.7, "status": "ok"},
+    {"pid": 42, "name": "systemd-journal", "state": "S", "nice": -1, "cpu_pct": 0.0, "mem_mb": 16.0, "status": "ok"},
+    {"pid": 118, "name": "systemd-resolve", "state": "S", "nice": 0, "cpu_pct": 0.0, "mem_mb": 12.9, "status": "ok"},
+    {"pid": 1, "name": "systemd", "state": "S", "nice": 0, "cpu_pct": 0.0, "mem_mb": 12.8, "status": "protected"},
+    {"pid": 357, "name": "systemd", "state": "S", "nice": 0, "cpu_pct": 0.0, "mem_mb": 11.2, "status": "protected"}
+  ],
+  "events": [
+  ]
+}
